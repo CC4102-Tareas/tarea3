@@ -36,7 +36,7 @@
 typedef double coord;
 char input_format[] = "%lf%lf";
 
-#define N 100000
+#define N 10
 
 coord points[N][2], *P[N+1]; /* an extra position is used */
 
