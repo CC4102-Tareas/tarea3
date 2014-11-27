@@ -1,5 +1,4 @@
-include "2dch.c"
-
+#include "2dch.c"
 
 /**
     Convex-Hull -> conjunto de puntos de P más pequeño que contiene todos 
@@ -11,14 +10,29 @@ include "2dch.c"
     1) Calcular convex-hull del conjunto de entrada. Se obtiene un conjunto C.
 */
 
-
 void main(int argc, char** argv) {
 
     // 1° arg: número de ciudades.
     // 2° arg: matriz con las ubicaciones de las ciudades.
-    long N = atoi(argv[1]);
-    int* matriz = argv[2];
+    //int N = atoi(argv[1]);
+    //int *matriz = argv[2];
 
+    coord matriz[11][2] = { {0, 0}, 
+                          {5, 0}, 
+                          {6, 7}, 
+                          {6, 9},
+                          {5, 8}, 
+                          {4, 3},
+                          {3, 2},
+                          {4, 2},
+                          {6, 1},
+                          {5, 4},
+                          {3, 1}};
+    int N = 11;
+
+	print_hull(matriz, ch2d(matriz, read_points()));
+
+	exit(0);
 }
 
 /**
