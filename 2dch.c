@@ -35,14 +35,14 @@
 typedef double coord;
 char input_format[] = "%lf%lf";
 
-#define N 7
+#define N 11
 
 coord points[N][2], *P[N+1]; /* an extra position is used */
 
 /**
     Lee los datos desde a entrada estándar, los guarda la coordenada en points
     y la posición del eje x en el arreglo P.
-*/
+
 int read_points(void) {
     int n = 0;
     char buf[100];
@@ -53,6 +53,7 @@ int read_points(void) {
     }
     return n;
 }
+*/
 
 void print_hull(coord **P, int m) {
     int i;
@@ -128,8 +129,10 @@ int ch2d(coord **P, int n)  {
     return u+make_chain(P+u, n-u+1, cmph);  /* make upper hull */
 }
 
+/**
 void main(int argc, char** argv) {
 
     print_hull(P, ch2d(P, read_points()));
     exit(0);
 }
+*/
