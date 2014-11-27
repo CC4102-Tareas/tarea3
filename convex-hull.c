@@ -1,4 +1,4 @@
-
+include "2dch.c"
 
 
 /**
@@ -9,6 +9,19 @@
     Procedimiento:
 
     1) Calcular convex-hull del conjunto de entrada. Se obtiene un conjunto C.
+*/
+
+
+void main(int argc, char** argv) {
+
+    // 1° arg: número de ciudades.
+    // 2° arg: matriz con las ubicaciones de las ciudades.
+    long N = atoi(argv[1]);
+    int* matriz = argv[2];
+
+}
+
+/**
     2) Se recorren todos los puntos fuera de C.
         2.1) En cada paso donde se encuentre un punto p que no está en C,
              buscar arco (p1, p2) en C, que minimiza la distancia siguiente
