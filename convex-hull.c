@@ -16,7 +16,6 @@ int read_points(coord **matriz, int num_input) {
         points[n][0] = 5000;
         points[n][1] = 5000;
 
-        printf("insertando punto %d -> (%d, %d)\n", n, matriz[n][0], matriz[n][1]);
         printf("insertando punto %d -> (%d, %d)\n", n, points[n][0], points[n][1]);
         // guardamos las posiciones x en P.
         P[n] = points[n];
@@ -55,8 +54,19 @@ void main(int argc, char** argv) {
         matriz[i] = malloc(cols * sizeof(coord));
     }
     
-    read_points(matriz, rows);
+    int j;
+// Some testing
+for (i = 0; i < rows; i++) {
+      for (j = 0; j < cols; j++)
+              matriz[i][j] = 0; // or whatever you want
+}
+
+for (i = 0; i < rows; i++) {
+      for (j = 0; j < cols; j++)
+              printf("%d ", matriz[i][j]);
+}
 exit(0);
+
     matriz[0][0] = 0;matriz[0][1] = 0;     
     matriz[1][0] = 5;matriz[1][1] = 0;
     matriz[2][0] = 6;matriz[2][1] = 7;
@@ -69,10 +79,15 @@ exit(0);
     matriz[9][0] = 5;matriz[9][1] = 4;
     matriz[10][0] = 3;matriz[10][1] = 1;
 
-    read_points(matriz, rows);
+    int n = 0;
+    while (n<11) {
+        printf("insertando punto %d -> (%d, %d)\n", n, matriz[n][0], matriz[n][1]);
+        n++;
+    }
+
     printf("Bien hasta aquí\n");
-    
-exit(0);
+    exit(0);
+
     print_hull(matriz, ch2d(P, read_points(matriz, rows)));
 
     exit(0);
