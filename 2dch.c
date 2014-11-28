@@ -32,12 +32,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-typedef double coord;
-char input_format[] = "%lf%lf";
-
-#define N 11
-
-coord points[N][2], *P[N+1]; /* an extra position is used */
+// char input_format[] = "%lf%lf";
 
 /**
     Lee los datos desde a entrada estándar, los guarda la coordenada en points
@@ -58,7 +53,8 @@ int read_points(void) {
 void print_hull(coord **P, int m) {
     int i;
     for (i=0; i<m; i++) {
-        printf("%d ", (P[i]-points[0])/2);
+        //printf("%d ", (P[i]-points[0])/2);
+        printf("(%f, %f)\n", P[i][0], P[i][1]);
     }
     printf("\n");
 }
