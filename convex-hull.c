@@ -154,7 +154,6 @@ void main(int argc, char** argv) {
     int rows = N;
     int cols = 2;
     double min_dist, min_form, aux, distancia_final=0;
-    int calc_dist_ch = 0; // flag
     coord **matriz;
 
     matriz = malloc(rows * sizeof(coord *));
@@ -178,6 +177,11 @@ void main(int argc, char** argv) {
     // se calcula el convex hull y se guarda en P. El valor retornado indica la cantidad de elementos que
     // forman parte del convex-hull y que están al principio de P.
     num_ch = ch2d(P, N);
+ 
+    // calcula la distancia del convex-hull
+    for(i=0;i<num_ch;i++){
+        distancia_final+=distancia(P[j], P[j+1]); 
+    }
     
     (DEBUG?print_hull(P, num_ch):1);
 
@@ -193,19 +197,9 @@ void main(int argc, char** argv) {
 
             min_dist = 1000000; // ínfinito
             
-            // si no se ha calculado la distancia del convex-hull aún se activa el flag
-            if (distancia_final == 0)
-                calc_dist_ch = 1;
-
             // encontrar par p1,p2 para punto i tal que minimiza distancia a convex-hull.
             // OBS: no nos preocupamos del caso limite porque P[num_ch] tiene el primer elemento.
             for(j=0;j<num_ch;j++) {
-                    // se calcula la distancia de la envoltura convexa
-                    if(calc_dist_ch) {
-                        distancia_final+=distancia(P[j], P[j+1]); 
-                        //printf("sumar %f\n", distancia(P[j], P[j+1]));
-                    }
-
                     aux = distancia(P[i], P[j]) + distancia(P[i], P[j+1]) - distancia(P[j], P[j+1]);
                     //printf("%f+%f-%f=%f\n", distancia(P[i], P[j]), distancia(P[i], P[j+1]), distancia(P[j], P[j+1]), aux);
                     if (aux < min_dist) {
@@ -216,9 +210,6 @@ void main(int argc, char** argv) {
                         trios[i][2] = j+1; // p2
                     }
             }
-
-            // se calcula una sola vez la envoltura convexa.
-            calc_dist_ch = 0;
 
             (DEBUG?printf("    (%f, %f) va entre (%f,%f) y (%f,%f).\n", P[i][0], P[i][1], 
                                                                         P[trios[i][0]][0], P[trios[i][0]][1], 
