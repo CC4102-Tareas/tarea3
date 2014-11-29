@@ -1,40 +1,62 @@
 #define DEBUG 0
-#define DEBUG_RESULTADO 1
-#define N 5 // cantidad de ciudades.
+#define DEBUG_RESULTADO 0
+//#define N 5 // cantidad de ciudades.
 
 typedef double coord;
-coord points[N][2], *P[N+1]; /* an extra position is used */
+//coord points[N][2], *P[N+1]; /* an extra position is used */
+coord **points, **P; /* an extra position is used */
 
 #include "2dch.c"
 #include <math.h>
 
+/* funcion para medir tiempo */
+double time_diff(struct timeval x , struct timeval y)
+{
+    double x_ms , y_ms , diff;
+
+    x_ms = (double)x.tv_sec*1000000 + (double)x.tv_usec;
+    y_ms = (double)y.tv_sec*1000000 + (double)y.tv_usec;
+
+    diff = (double)y_ms - (double)x_ms;
+
+    return diff/1000000.0;
+}
+
 /**
   Se redefine la función read_points para ocuparla en la tarea.
 
-  @parameter coord** matriz    arreglo con los datos a ser analizados
-  @parameter int     num_input cantidad de datos que contiene el arreglo matriz
+  @parameter char* filename  nombre del archivo donde se encuentran los datos
+  @parameter int   num_input cantidad de datos que contiene el arreglo matriz
 
   @return parámetro de entrada num_input
  */
-int read_points(coord **matriz, int num_input) {
-    int n = 0;
+int read_points(char *filename, int num_input) {
+    int id, i;
+    double x,y;
+    char line[80];
 
-    //points = matriz;
+    FILE *fr;
+    fr = fopen (filename, "rt");  
 
-    while (n < num_input) {
-        // se traspasan los datos al nuevo arreglo.
-        // OBS: se podría hacer algo más eficiente como que points sea un 
-        //      puntero que apunte al nuevo arreglo pero bueno...se acabo el semestre! :P
-        points[n][0] = matriz[n][0];
-        points[n][1] = matriz[n][1];
+    i = 0;
 
-        (DEBUG?printf("insertando punto %d -> (%f, %f)\n", n, points[n][0], points[n][1]):1);
+    while(fgets(line, 80, fr) != NULL)
+    {	
+        if(line[0] > 57 || line[0] < 48)
+            continue;
+
+        sscanf (line, "%d %lf %lf", &id, &x, &y);
+        points[i][0] = x;
+        points[i][1] = y;
+
+        (DEBUG?printf("insertando punto %d -> (%f, %f)\n", i, points[i][0], points[i][1]):1);
         // guardamos las posiciones x en P.
-        P[n] = points[n];
-
-        // revisa si se rompe el contrato.
-        assert(++n <= N);
+        P[i] = points[i];
+        
+        i++;
     }
+
+    fclose(fr);
 
     // se devuelve el número de elementos que debería procesar
     return num_input;
@@ -46,7 +68,7 @@ int read_points(coord **matriz, int num_input) {
   @parameter coord* p1 arreglo de tamaños 2
   @parameter coord* p2 arreglos de tamaño 2
 
-  @return distancia euclidiana entre p1 y p2
+  @return double distancia euclidiana entre p1 y p2
  */
 double distancia(coord *p1, coord *p2) {
     coord x1, x2, y1, y2;
@@ -91,17 +113,44 @@ int agregar_a_ch(int pos_p, int pos_base, int num_ch) {
 }
 
 /**
+	MAIN:
+
+	RECIBE: 
+		1. ARCHIVO TSP CON PUNTOS
+		2. NUMERO DE PUNTOS EN ARCHIVO
+	REALIZA:
+		1. CARGA ARREGLO EN MEMORIA RAM
+		2. CALCULA CONVEX-HULL
+		3. AGREGA PUNTOS A CONVEX-HULL
+        4. IMPRESION DE LARGO DE CAMINO
+		5. IMPRESION DE TIEMPO UTILIZADO
+        
     OBS: El algoritmo asume que hay por lo menos un punto que agregar 
          para poder calcular la distancia del convex-hull
 */
 void main(int argc, char** argv) {
 
-    // 1° arg: número de ciudades.
-    // 2° arg: matriz con las ubicaciones de las ciudades.
-    //int N = atoi(argv[1]);
-    //int *matriz = argv[2];
+	/***********************************/
+	/** 1. init variables			  **/
+	/***********************************/
+    
+    // variables para experimentos
+    int N, i;
+	struct timeval before , after;
+	double time_elapsed;
+    // se rescata como parametro
+	N = atoi(argv[2]);
+    
+    // arreglos que utiliza convex-hull
+    points = malloc(N * sizeof(coord*));
+    for (i = 0; i < N; i++) {
+        points[i] = malloc(2 * sizeof(coord));
+    }
 
-    int i, num_ch, j, k, elegido;
+    P = malloc((N+1)*sizeof(coord*));
+
+    // ************************************************************
+    int num_ch, j, k, elegido;
     int rows = N;
     int cols = 2;
     double min_dist, min_form, aux, distancia_final=0;
@@ -119,60 +168,13 @@ void main(int argc, char** argv) {
         trios[i] = malloc(3 * sizeof(int));
     }
 
-    // caso de prueba   
-    /*
-       matriz[0][0] = 0;matriz[0][1] = 0;     
-       matriz[1][0] = 5;matriz[1][1] = 0;
-       matriz[2][0] = 6;matriz[2][1] = 7;
-       matriz[3][0] = 6;matriz[3][1] = 9;
-       matriz[4][0] = 5;matriz[4][1] = 8;
-       matriz[5][0] = 4;matriz[5][1] = 3;
-       matriz[6][0] = 3;matriz[6][1] = 2;
-       matriz[7][0] = 4;matriz[7][1] = 1;
-       matriz[8][0] = 6;matriz[8][1] = 1;
-       matriz[9][0] = 5;matriz[9][1] = 4;
-       matriz[10][0] = 3;matriz[10][1] = 0;
-*/
-       matriz[0][0] = 0;matriz[0][1] = 0;     
-       matriz[1][0] = 10;matriz[1][1] = 0;
-       matriz[2][0] = 0;matriz[2][1] = 10;
-       matriz[3][0] = 10;matriz[3][1] = 10;
-       matriz[4][0] = 5;matriz[4][1] = 0;
-/*
-       matriz[0][0] = 0.177; matriz[0][1] = 0.177;
-       matriz[1][0] = 0.355; matriz[1][1] = 0.355; 
-       matriz[2][0] = 0.381; matriz[2][1] = 0.381; 
-       matriz[3][0] = 0.457; matriz[3][1] = 0.457;
-       matriz[4][0] = 0.632; matriz[4][1] = 0.632; 
-       matriz[5][0] = 0.789; matriz[5][1] = 0.789; 
-       matriz[6][0] = 0.164; matriz[6][1] = 0.000; 
-       matriz[7][0] = 0.171; matriz[7][1] = 0.000; 
-       matriz[8][0] = 0.387; matriz[8][1] = 0.000;
-       matriz[9][0] = 0.409; matriz[9][1] = 0.000; 
-       matriz[10][0] = 1.000; matriz[10][1] = 0.032;
-       matriz[11][0] = 1.000; matriz[11][1] = 0.268;
-       matriz[12][0] = 1.000; matriz[12][1] = 0.681;
-       matriz[13][0] = 1.000; matriz[13][1] = 0.822;
-       matriz[14][0] = 1.000; matriz[14][1] = 0.992;
-       matriz[15][0] = 0.993; matriz[15][1] = 0.993;
-       matriz[16][0] = 0.794; matriz[16][1] = 1.000;
-       matriz[17][0] = 0.057; matriz[17][1] = 1.000;
-       matriz[18][0] = 0.000; matriz[18][1] = 1.000;
-       matriz[19][0] = 0.000; matriz[19][1] = 0.329;
-
-       matriz[0][0] = 0; matriz[0][1] = 0;
-       matriz[1][0] = 0; matriz[1][1] = 6; 
-       matriz[2][0] = 20; matriz[2][1] = 0; 
-       matriz[3][0] = 20; matriz[3][1] = 6;
-       matriz[4][0] = 5; matriz[4][1] = 2; 
-       matriz[5][0] = 18; matriz[5][1] = 3; 
-
-     */
     /**************************************************************************************************/
     /**************************************************************************************************/
+    // se comienza a medir el tiempo
+	gettimeofday(&before, NULL);
 
     // carga los datos en los arreglos que ocupa ch2d
-    read_points(matriz, N);
+    read_points(argv[1], N);
     // se calcula el convex hull y se guarda en P. El valor retornado indica la cantidad de elementos que
     // forman parte del convex-hull y que están al principio de P.
     num_ch = ch2d(P, N);
@@ -251,9 +253,18 @@ void main(int argc, char** argv) {
         num_ch = agregar_a_ch(trios[elegido][1], trios[elegido][2], num_ch);
     }
 
-    (DEBUG_RESULTADO?printf("\nResultado final -> distancia_final: %f\n", distancia_final):1);
-    (DEBUG_RESULTADO?print_hull(P, num_ch):1);
-    (DEBUG_RESULTADO?printf("\n========================================\n"):1);
+    // fin de medición de tiempo
+	gettimeofday(&after, NULL);
+	time_elapsed = time_diff(before, after);
+
+	/***********************************/
+	/** 3. Finish program			  **/
+	/***********************************/
+
+    (DEBUG_RESULTADO?printf("Distancia total recorrida: %f\n", distancia_final):1);
+    (DEBUG_RESULTADO?printf("Tiempo de computo: %f\n", time_elapsed):1);
+    //(DEBUG_RESULTADO?print_hull(P, num_ch):1);
+    //(DEBUG_RESULTADO?printf("\n========================================\n"):1);
 
     exit(0);
 }
