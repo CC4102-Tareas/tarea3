@@ -1,4 +1,5 @@
-#define DEBUG 1
+#define DEBUG 0
+#define DEBUG_RESULTADO 1
 #define N 5 // cantidad de ciudades.
 
 typedef double coord;
@@ -104,6 +105,7 @@ void main(int argc, char** argv) {
     int rows = N;
     int cols = 2;
     double min_dist, min_form, aux, distancia_final=0;
+    int calc_dist_ch = 0; // flag
     coord **matriz;
 
     matriz = malloc(rows * sizeof(coord *));
@@ -178,7 +180,6 @@ void main(int argc, char** argv) {
     (DEBUG?print_hull(P, num_ch):1);
 
     // OBS: los puntos del covex-hull se encuentran en los primeros num_ch puntos de P.
-    int calc_dist_ch = 0;
     // Mientras existan puntos que están fuera del convex-hull
     while(num_ch < N) {
 
@@ -200,7 +201,7 @@ void main(int argc, char** argv) {
                     // se calcula la distancia de la envoltura convexa
                     if(calc_dist_ch) {
                         distancia_final+=distancia(P[j], P[j+1]); 
-                        printf("sumar %f\n", distancia(P[j], P[j+1]));
+                        //printf("sumar %f\n", distancia(P[j], P[j+1]));
                     }
 
                     aux = distancia(P[i], P[j]) + distancia(P[i], P[j+1]) - distancia(P[j], P[j+1]);
@@ -250,9 +251,9 @@ void main(int argc, char** argv) {
         num_ch = agregar_a_ch(trios[elegido][1], trios[elegido][2], num_ch);
     }
 
-    (DEBUG?printf("\nResultado final -> distancia_final: %f\n", distancia_final):1);
-    (DEBUG?print_hull(P, num_ch):1);
-    (DEBUG?printf("\n========================================\n"):1);
+    (DEBUG_RESULTADO?printf("\nResultado final -> distancia_final: %f\n", distancia_final):1);
+    (DEBUG_RESULTADO?print_hull(P, num_ch):1);
+    (DEBUG_RESULTADO?printf("\n========================================\n"):1);
 
     exit(0);
 }
