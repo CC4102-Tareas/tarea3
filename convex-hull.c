@@ -1,5 +1,5 @@
 #define DEBUG 1
-#define N 11 // cantidad de ciudades.
+#define N 5 // cantidad de ciudades.
 
 typedef double coord;
 coord points[N][2], *P[N+1]; /* an extra position is used */
@@ -89,6 +89,10 @@ int agregar_a_ch(int pos_p, int pos_base, int num_ch) {
     return ++num_ch;
 }
 
+/**
+    OBS: El algoritmo asume que hay por lo menos un punto que agregar 
+         para poder calcular la distancia del convex-hull
+*/
 void main(int argc, char** argv) {
 
     // 1° arg: número de ciudades.
@@ -99,7 +103,7 @@ void main(int argc, char** argv) {
     int i, num_ch, j, k, elegido;
     int rows = N;
     int cols = 2;
-    double min_dist, min_form, aux, distancia_final;
+    double min_dist, min_form, aux, distancia_final=0;
     coord **matriz;
 
     matriz = malloc(rows * sizeof(coord *));
@@ -114,6 +118,7 @@ void main(int argc, char** argv) {
     }
 
     // caso de prueba   
+    /*
        matriz[0][0] = 0;matriz[0][1] = 0;     
        matriz[1][0] = 5;matriz[1][1] = 0;
        matriz[2][0] = 6;matriz[2][1] = 7;
@@ -125,8 +130,13 @@ void main(int argc, char** argv) {
        matriz[8][0] = 6;matriz[8][1] = 1;
        matriz[9][0] = 5;matriz[9][1] = 4;
        matriz[10][0] = 3;matriz[10][1] = 0;
-
-    /*
+*/
+       matriz[0][0] = 0;matriz[0][1] = 0;     
+       matriz[1][0] = 10;matriz[1][1] = 0;
+       matriz[2][0] = 0;matriz[2][1] = 10;
+       matriz[3][0] = 10;matriz[3][1] = 10;
+       matriz[4][0] = 5;matriz[4][1] = 0;
+/*
        matriz[0][0] = 0.177; matriz[0][1] = 0.177;
        matriz[1][0] = 0.355; matriz[1][1] = 0.355; 
        matriz[2][0] = 0.381; matriz[2][1] = 0.381; 
@@ -167,8 +177,8 @@ void main(int argc, char** argv) {
     
     (DEBUG?print_hull(P, num_ch):1);
 
-    // OBS: los puntos de la covex-hull se encuentran en los primeros num_ch puntos de P.
-
+    // OBS: los puntos del covex-hull se encuentran en los primeros num_ch puntos de P.
+    int calc_dist_ch = 0;
     // Mientras existan puntos que están fuera del convex-hull
     while(num_ch < N) {
 
@@ -178,11 +188,21 @@ void main(int argc, char** argv) {
         for(i=num_ch+1;i<=N;i++) {
             (DEBUG?printf("No está en convex-hull (%d)-> (%f, %f).\n", i, P[i][0], P[i][1]):1);
 
-            // encontrar par p1,p2 para punto i tal que minimiza distancia a convex-hull.
             min_dist = 1000000; // ínfinito
-            // evaluamos los casos a partir del convex-hull. Se itera de 2 en 2.
-            // no nos preocupamos del caso limite porque P[num_ch] tiene el primer elemento.
+            
+            // si no se ha calculado la distancia del convex-hull aún se activa el flag
+            if (distancia_final == 0)
+                calc_dist_ch = 1;
+
+            // encontrar par p1,p2 para punto i tal que minimiza distancia a convex-hull.
+            // OBS: no nos preocupamos del caso limite porque P[num_ch] tiene el primer elemento.
             for(j=0;j<num_ch;j++) {
+                    // se calcula la distancia de la envoltura convexa
+                    if(calc_dist_ch) {
+                        distancia_final+=distancia(P[j], P[j+1]); 
+                        printf("sumar %f\n", distancia(P[j], P[j+1]));
+                    }
+
                     aux = distancia(P[i], P[j]) + distancia(P[i], P[j+1]) - distancia(P[j], P[j+1]);
                     //printf("%f+%f-%f=%f\n", distancia(P[i], P[j]), distancia(P[i], P[j+1]), distancia(P[j], P[j+1]), aux);
                     if (aux < min_dist) {
@@ -191,9 +211,11 @@ void main(int argc, char** argv) {
                         trios[i][0] = j; // p1
                         trios[i][1] = i; // p
                         trios[i][2] = j+1; // p2
-
                     }
             }
+
+            // se calcula una sola vez la envoltura convexa.
+            calc_dist_ch = 0;
 
             (DEBUG?printf("    (%f, %f) va entre (%f,%f) y (%f,%f).\n", P[i][0], P[i][1], 
                                                                         P[trios[i][0]][0], P[trios[i][0]][1], 
@@ -208,8 +230,8 @@ void main(int argc, char** argv) {
         for(i=num_ch+1;i<=N;i++) {
 
             aux = (distancia(P[trios[i][1]], P[trios[i][0]]) + 
-                   distancia(P[trios[i][1]], P[trios[i][2]]))/
-                   distancia(P[trios[i][0]], P[trios[i][2]]);
+                    distancia(P[trios[i][1]], P[trios[i][2]]))/
+                    distancia(P[trios[i][0]], P[trios[i][2]]);
 
             if (aux < min_form) {
                 // guardar indices
@@ -218,12 +240,17 @@ void main(int argc, char** argv) {
             }
         }
 
+        // Se calcula la distancia final
+        distancia_final += distancia(P[trios[elegido][0]], P[trios[elegido][1]]) + 
+                           distancia(P[trios[elegido][1]], P[trios[elegido][2]]) - 
+                           distancia(P[trios[elegido][0]], P[trios[elegido][2]]);
+
         (DEBUG?printf("    Insertar en Convex-Hull ->  (%f, %f)\n", P[elegido][0], P[elegido][1]):1);
         // insertar en convex hull en punto escogido
         num_ch = agregar_a_ch(trios[elegido][1], trios[elegido][2], num_ch);
     }
 
-    (DEBUG?printf("\nResultado final ->\n"):1);
+    (DEBUG?printf("\nResultado final -> distancia_final: %f\n", distancia_final):1);
     (DEBUG?print_hull(P, num_ch):1);
     (DEBUG?printf("\n========================================\n"):1);
 
