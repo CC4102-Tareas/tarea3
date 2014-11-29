@@ -1,4 +1,4 @@
-#define DEBUG 0
+#define DEBUG 1
 #define N 11 // cantidad de ciudades.
 
 typedef double coord;
@@ -9,6 +9,11 @@ coord points[N][2], *P[N+1]; /* an extra position is used */
 
 /**
   Se redefine la función read_points para ocuparla en la tarea.
+
+  @parameter coord** matriz    arreglo con los datos a ser analizados
+  @parameter int     num_input cantidad de datos que contiene el arreglo matriz
+
+  @return parámetro de entrada num_input
  */
 int read_points(coord **matriz, int num_input) {
     int n = 0;
@@ -36,6 +41,11 @@ int read_points(coord **matriz, int num_input) {
 
 /**
   Calcula la distancia entre 2 puntos.
+
+  @parameter coord* p1 arreglo de tamaños 2
+  @parameter coord* p2 arreglos de tamaño 2
+
+  @return distancia euclidiana entre p1 y p2
  */
 double distancia(coord *p1, coord *p2) {
     coord x1, x2, y1, y2;
@@ -78,15 +88,6 @@ int agregar_a_ch(int pos_p, int pos_base, int num_ch) {
 
     return ++num_ch;
 }
-/**
-  Convex-Hull -> conjunto de puntos de P más pequeño que contiene todos 
-  los puntos.
-  Sea C subconjunto de P tal que es un convex-hull.
-
-Procedimiento:
-
-1) Calcular convex-hull del conjunto de entrada. Se obtiene un conjunto C.
- */
 
 void main(int argc, char** argv) {
 
@@ -95,14 +96,21 @@ void main(int argc, char** argv) {
     //int N = atoi(argv[1]);
     //int *matriz = argv[2];
 
-    int i;
+    int i, num_ch, j, k, elegido;
     int rows = N;
     int cols = 2;
+    double min_dist, min_form, aux, distancia_final;
     coord **matriz;
 
     matriz = malloc(rows * sizeof(coord *));
     for (i = 0; i < rows; i++) {
         matriz[i] = malloc(cols * sizeof(coord));
+    }
+    
+    int **trios;
+    trios = malloc((N+1) * sizeof(int *));
+    for(i=0;i<N+1;i++) {
+        trios[i] = malloc(3 * sizeof(int));
     }
 
     // caso de prueba   
@@ -155,25 +163,11 @@ void main(int argc, char** argv) {
     read_points(matriz, N);
     // se calcula el convex hull y se guarda en P. El valor retornado indica la cantidad de elementos que
     // forman parte del convex-hull y que están al principio de P.
-    int num_ch = ch2d(P, N);
-    print_hull(P, num_ch);
+    num_ch = ch2d(P, N);
+    
+    (DEBUG?print_hull(P, num_ch):1);
 
-    // los puntos de la covex-hull se encuentran en los primeros num_ch puntos de P.
-
-    /**
-      2) Se recorren todos los puntos fuera de P.
-      2.1) En cada paso donde se encuentre un punto p que no está en P,
-      buscar arco (p1, p2) en C, que minimiza lo siguiente
-
-      dist(p,p1) + dist(p,p2) - dist(p1,p2)   O(|C|^2)
-     */
-
-    // almacena todos los trios, p1 p p2, donde p1 y p2 son los puntos 
-    // que minimizan la distancia a p desde el vertex-hull.
-    //coord **trios = malloc(N * sizeof(coord*));
-    int trios[N+1][3];
-    double min_dist, min_form, aux;
-    int j,k, elegido;
+    // OBS: los puntos de la covex-hull se encuentran en los primeros num_ch puntos de P.
 
     // Mientras existan puntos que están fuera del convex-hull
     while(num_ch < N) {
@@ -236,16 +230,3 @@ void main(int argc, char** argv) {
     exit(0);
 }
 
-/**
-  2.2) El paso anterior puede entregar más de un par, luego
-  se escoge el punto p* del conjunto encontrado en el punto anterior el
-  que minimiza
-
-  dist(p*, p1*) + dist(p*, p2*)
-  ----------------------------
-  dist(p1*, p2*)
-
-  2.3) Extender C incluyendo p* entre p1* y p2*.
-
-  2.4) Si no quedan elementos fuera de C, retornar C.
- */
