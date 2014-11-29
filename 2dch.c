@@ -53,11 +53,11 @@ int read_points(void) {
 void print_hull(coord **P, int m) {
     int i;
 
-    printf("Puntos en el convex-hull(%d):\n", m);
+    printf("\nPuntos en el convex-hull(%d):\n", m);
 
     for (i=0; i<m; i++) {
-        //printf("%d ", (P[i]-points[0])/2);
-        printf("(%f, %f)\n", P[i][0], P[i][1]);
+        printf("%d ", (P[i]-points[0])/2);
+        //printf("(%f, %f)\n", P[i][0], P[i][1]);
     }
 
     printf("\n");
